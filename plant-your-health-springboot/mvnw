@@ -1,0 +1,7 @@
+#!/bin/sh
+MVN=./mvnw-cache
+if command -v mvn >/dev/null 2>&1; then
+  mvn "$@"
+else
+  echo "Please install Maven or run mvn directly."
+fi

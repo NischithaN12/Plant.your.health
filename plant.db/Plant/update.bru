@@ -1,0 +1,25 @@
+meta {
+  name: update
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:8080/api/activities/15
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Squats",
+    "type": "EXERCISE",
+      "suggested": false,
+      "createdAt": "2025-09-06T07:16:50.964892",
+      "updatedAt": "2025-09-06T07:16:50.964892"
+    }
+}
+
+settings {
+  encodeUrl: true
+}

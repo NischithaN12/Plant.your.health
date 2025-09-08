@@ -1,0 +1,22 @@
+meta {
+  name: login
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8080/api/logs
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "activityId": 1
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

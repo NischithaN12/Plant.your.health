@@ -1,0 +1,85 @@
+package com.example.plantyourhealth.service;
+
+import com.example.plantyourhealth.model.Activity;
+import com.example.plantyourhealth.model.ActivityLog;
+import com.example.plantyourhealth.model.ActivityType;
+import com.example.plantyourhealth.model.Streak;
+import com.example.plantyourhealth.repo.ActivityLogRepository;
+import com.example.plantyourhealth.repo.StreakRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.EnumMap;
+import java.util.Map;
+
+@Service
+public class StreakService {
+    private final StreakRepository streakRepository;
+    private final ActivityLogRepository logRepository;
+
+    private final ZoneId zoneId = ZoneId.of("Asia/Kolkata");
+
+    public StreakService(StreakRepository streakRepository, ActivityLogRepository logRepository) {
+        this.streakRepository = streakRepository;
+        this.logRepository = logRepository;
+    }
+
+    private Streak getOrCreate(ActivityType type) {
+        return streakRepository.findByType(type).orElseGet(() -> streakRepository.save(new Streak(type)));
+    }
+
+    @Transactional
+    public Streak log(Activity activity) {
+        LocalDate today = LocalDate.now(zoneId);
+        Streak s = getOrCreate(activity.getType());
+
+        if (!logRepository.existsByTypeAndDate(activity.getType(), today)) {
+            logRepository.save(new ActivityLog(activity.getId(), activity.getType(), today));
+
+            if (s.getLastActiveDate() == null) {
+                s.setCurrentStreak(1);
+            } else if (s.getLastActiveDate().equals(today)) {
+                return s; // already counted today
+            } else if (s.getLastActiveDate().equals(today.minusDays(1))) {
+                s.setCurrentStreak(s.getCurrentStreak() + 1);
+            } else {
+                s.setCurrentStreak(1);
+            }
+            s.setBestStreak(Math.max(s.getBestStreak(), s.getCurrentStreak()));
+            s.setLastActiveDate(today);
+            return streakRepository.save(s);
+        }
+
+        return s; // return existing if already logged today
+    }
+
+
+    @Transactional
+    public void dailyConsolidation() {
+        // If a category missed yesterday and lastActiveDate < yesterday, mark currentStreak = 0
+        LocalDate today = LocalDate.now(zoneId);
+        LocalDate yesterday = today.minusDays(1);
+        for (ActivityType t : ActivityType.values()) {
+            Streak s = getOrCreate(t);
+            if (s.getLastActiveDate() == null) continue;
+            if (s.getLastActiveDate().isBefore(yesterday)) {
+                s.setCurrentStreak(0);
+                streakRepository.save(s);
+            }
+        }
+    }
+
+    public Map<ActivityType, Streak> getAllStreaks() {
+        Map<ActivityType, Streak> map = new EnumMap<>(ActivityType.class);
+        for (ActivityType t : ActivityType.values()) {
+            map.put(t, getOrCreate(t));
+        }
+        return map;
+    }
+
+    public Streak getStreak(ActivityType type) {
+        return getOrCreate(type);
+    }
+}

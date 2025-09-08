@@ -1,0 +1,15 @@
+meta {
+  name: get by type
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8080/api/activities?=EXERCISE
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
