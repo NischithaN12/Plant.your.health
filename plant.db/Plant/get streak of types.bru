@@ -1,0 +1,21 @@
+meta {
+  name: get streak of types
+  type: http
+  seq: 9
+}
+
+get {
+  url: http://localhost:8080/api/streaks?type=exercise
+http://localhost:8080/api/streaks?type=exercise
+  body: none
+  auth: inherit
+}
+
+params:query {
+  type: exercise
+  http://localhost:8080/api/streaks?type=exercise
+}
+
+settings {
+  encodeUrl: true
+}
