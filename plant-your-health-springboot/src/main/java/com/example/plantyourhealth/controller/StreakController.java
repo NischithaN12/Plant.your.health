@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:4200")
 public class StreakController {
     private final ActivityService activityService;
     private final StreakService streakService;
@@ -31,6 +31,14 @@ public class StreakController {
         Streak updated = streakService.log(a);
         return ResponseEntity.ok(updated);
     }
+
+    @DeleteMapping("/logs/{activityId}")
+    public ResponseEntity<Void> unlog(@PathVariable Long activityId) {
+        Activity activity = activityService.getOrThrow(activityId);
+        streakService.unlog(activity);
+        return ResponseEntity.noContent().build();
+    }
+
 
 
     @GetMapping("/streaks")

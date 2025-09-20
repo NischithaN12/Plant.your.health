@@ -7,10 +7,7 @@ public enum ActivityType {
 
     @JsonCreator
     public static ActivityType fromString(String input) {
-        try {
-            return ActivityType.valueOf(input.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid activity type: " + input);
-        }
+        return ActivityType.valueOf(input.toUpperCase());
     }
+
 }

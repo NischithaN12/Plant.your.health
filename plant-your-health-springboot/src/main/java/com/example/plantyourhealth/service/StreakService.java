@@ -16,6 +16,7 @@ import java.util.Map;
 
 @Service
 public class StreakService {
+
     private final StreakRepository streakRepository;
     private final ActivityLogRepository logRepository;
 
@@ -35,8 +36,10 @@ public class StreakService {
         LocalDate today = LocalDate.now(zoneId);
         Streak s = getOrCreate(activity.getType());
 
-        if (!logRepository.existsByTypeAndDate(activity.getType(), today)) {
-            logRepository.save(new ActivityLog(activity.getId(), activity.getType(), today));
+        if (!logRepository.existsByActivityIdAndDate(activity.getId(), today)) {
+            int points = activity.isSuggested() ? 20 : 10; // ✅ assign points
+            logRepository.save(new ActivityLog(activity.getId(), activity.getType(), today, points));
+
 
             if (s.getLastActiveDate() == null) {
                 s.setCurrentStreak(1);
@@ -47,13 +50,58 @@ public class StreakService {
             } else {
                 s.setCurrentStreak(1);
             }
+
             s.setBestStreak(Math.max(s.getBestStreak(), s.getCurrentStreak()));
             s.setLastActiveDate(today);
             return streakRepository.save(s);
         }
 
-        return s; // return existing if already logged today
+        return s;
     }
+
+    @Transactional
+    public void unlog(Activity activity) {
+        LocalDate today = LocalDate.now(zoneId);
+
+        // Check if today's log exists
+        if (logRepository.existsByActivityIdAndDate(activity.getId(), today)) {
+            // Delete today's log
+            logRepository.deleteByActivityIdAndDate(activity.getId(), today);
+
+            Streak s = getOrCreate(activity.getType());
+
+            // Rollback streak only if last active date was today
+            if (s.getLastActiveDate() != null && s.getLastActiveDate().equals(today)) {
+                // Find the most recent previous log date (if any)
+                LocalDate previousDate = logRepository
+                        .findTopByActivityIdOrderByDateDesc(activity.getId())
+                        .map(ActivityLog::getDate)
+                        .orElse(null);
+
+                if (previousDate != null) {
+                    // Restore streak up to previous date
+                    s.setLastActiveDate(previousDate);
+
+                    // Check if yesterday was last logged → maintain streak
+                    if (previousDate.equals(today.minusDays(1))) {
+                        s.setCurrentStreak(s.getCurrentStreak() - 1);
+                    } else {
+                        // Break streak if there’s a gap
+                        s.setCurrentStreak(0);
+                    }
+                } else {
+                    // No logs left → reset streak
+                    s.setCurrentStreak(0);
+                    s.setLastActiveDate(null);
+                }
+
+                streakRepository.save(s);
+            }
+        }
+    }
+
+
+
 
 
     @Transactional

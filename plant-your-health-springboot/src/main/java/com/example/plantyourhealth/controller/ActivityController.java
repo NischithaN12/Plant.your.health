@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/activities")
 public class ActivityController {
@@ -55,8 +57,10 @@ public class ActivityController {
 
     // ✅ Delete activity (by id)
     @DeleteMapping("/{id}")
+
     public ResponseEntity<?> delete(@PathVariable Long id) {
         activityService.delete(id);
-        return ResponseEntity.ok("Activity with id " + id + " deleted successfully.");
+        return ResponseEntity.ok(Map.of("message", "Activity with id " + id + " deleted successfully."));
     }
+
 }
