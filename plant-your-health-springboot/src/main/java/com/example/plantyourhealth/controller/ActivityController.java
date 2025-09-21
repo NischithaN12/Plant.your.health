@@ -41,7 +41,7 @@ public class ActivityController {
     // ✅ Create new activity
     @PostMapping
     public ResponseEntity<Activity> create(@Valid @RequestBody CreateActivityRequest req) {
-        if (req.getSuggested() == null) req.setSuggested(false);
+
         Activity created = activityService.create(req);
         return ResponseEntity.created(URI.create("/api/activities/" + created.getId()))
                 .body(created);

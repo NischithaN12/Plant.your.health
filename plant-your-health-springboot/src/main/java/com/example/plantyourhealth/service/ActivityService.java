@@ -32,7 +32,7 @@ public class ActivityService {
         Activity a = new Activity();
         a.setName(req.getName().trim());
         a.setType(req.getType());
-        a.setSuggested(Boolean.TRUE.equals(req.getSuggested()));
+
         return activityRepository.save(a);
     }
 
@@ -41,16 +41,8 @@ public class ActivityService {
         Activity a = activityRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Activity not found"));
 
-        if (a.isSuggested()) {
-            throw new BadRequestException("Suggested activities cannot be updated. You may delete and re-add as custom.");
-        }
-
         // Update fields
         a.setName(req.getName().trim());
-        if (req.getType() != null) {
-            a.setType(req.getType()); // ✅ update type as well
-        }
-
         return activityRepository.save(a);
     }
 

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -118,6 +119,10 @@ public class StreakService {
             }
         }
     }
+    public List<ActivityLog> getTodayLogs(LocalDate date) {
+        return logRepository.findAllByDate(date);
+    }
+
 
     public Map<ActivityType, Streak> getAllStreaks() {
         Map<ActivityType, Streak> map = new EnumMap<>(ActivityType.class);
@@ -126,6 +131,10 @@ public class StreakService {
         }
         return map;
     }
+    public List<ActivityLog> getAllLogs() {
+        return logRepository.findAll();
+    }
+
 
     public Streak getStreak(ActivityType type) {
         return getOrCreate(type);

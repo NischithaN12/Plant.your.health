@@ -19,12 +19,6 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
     Optional<ActivityLog> findByActivityIdAndDate(Long activityId, LocalDate date);
 
     Optional<ActivityLog> findTopByActivityIdOrderByDateDesc(Long activityId);
+    List<ActivityLog> findAllByDate(LocalDate date);
 
-    // ✅ Sum points for a given date
-    @Query("SELECT COALESCE(SUM(a.points), 0) FROM ActivityLog a WHERE a.date = :date")
-    int getTotalPointsByDate(@Param("date") LocalDate date);
-
-    // ✅ Sum points between two dates (trend)
-    @Query("SELECT a.date, SUM(a.points) FROM ActivityLog a WHERE a.date BETWEEN :start AND :end GROUP BY a.date ORDER BY a.date")
-    List<Object[]> getPointsTrend(@Param("start") LocalDate start, @Param("end") LocalDate end);
 }
